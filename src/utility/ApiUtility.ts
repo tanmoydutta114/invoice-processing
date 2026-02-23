@@ -55,7 +55,7 @@ export class ApiUtility {
 
   static dateFormat(
     date?: string | Date,
-    formatString: string = "YYYY-MM-DD"
+    formatString: string = "YYYY-MM-DD",
   ): string {
     // If date is not provided, use current date
     if (!date) {
@@ -73,4 +73,20 @@ export class ApiUtility {
 
     return parsedDate.format(formatString);
   }
+
+  static normalizeInvoiceNo = (value: string): string =>
+    value.replace(/[\s\W_]+/g, "").toLowerCase();
+
+  static normalizeGSTin = (value: string): string =>
+    value.replace(/\s+/g, "").toUpperCase();
+
+  static parseISODate = (value: Date): Date => {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
+  };
+
+  static parseQRDate = (value: string): Date => {
+    const [day, month, year] = value.split("/").map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
+  };
 }

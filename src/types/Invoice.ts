@@ -117,8 +117,8 @@ export interface InvoiceData extends BaseEntity, InvoiceMeta {
   shippingCustomer: Customer;
 
   invoiceNo: string;
-  invoiceDate: ISODateString;
-  ewayBillNo: string;
+  invoiceDate: Date; // ISODateString
+  ewayBillNo: string; //
   irnNo: string;
 
   products: ProductItem[];
