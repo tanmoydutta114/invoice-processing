@@ -7,9 +7,10 @@ import {
   ProcessFromGcsResult,
 } from '../types/types.js';
 import { GeminiService } from './GeminiService.js';
+import EnvConfig from '../utility/AppEnv.js';
 
 export class InvoiceService {
-  static async processInvoiceFromGcs(
+  static async processInvoiceFromGCPBucket(
     fileUrl: string,
     options: ProcessFromGcsOptions,
   ): Promise<ProcessFromGcsResult> {
@@ -22,11 +23,11 @@ export class InvoiceService {
     const { base64, mimeType } = await fetchFileFromUrl(fileUrl);
 
     const extracted = await GeminiService.extractInvoiceData(base64, mimeType, {
-      apiKey: options.apiKey,
-      model: options.model,
+      apiKey: EnvConfig.geminiApiKey,
+      model: EnvConfig.geminiModel,
     });
 
-    const processedData = InvoiceController.autoCorrectFromQr(extracted);
+    const processedData = InvoiceController.autoCorrectFromQR(extracted);
 
     const verification = await InvoiceController.verifyInvoiceAuthenticity(processedData);
 
@@ -34,7 +35,7 @@ export class InvoiceService {
       data: processedData,
       verificationStatus: verification.status,
       warning: verification.status !== 'VALID' ? verification.error : null,
-      saveDisabled: verification.status === 'QR_MISMATCH',
+      QRMismatch: verification.status === 'QR_MISMATCH',
     };
   }
   static async processInvoices(req: Request, res: Response) {
@@ -42,7 +43,7 @@ export class InvoiceService {
       ?.invoicePath as InvoiceProcessingRequestBody;
 
     try {
-      const response = await InvoiceService.processInvoiceFromGcs(
+      const response = await InvoiceService.processInvoiceFromGCPBucket(
         invoicePath.fileUrl,
         invoicePath.options,
       );

@@ -12,15 +12,16 @@ export interface GenerateInvoiceResponse {
 }
 
 export interface ProcessFromGcsOptions {
-  apiKey: string;
+  apiKey?: string;
   model?: string;
+  fileType: string;
 }
 
 export interface ProcessFromGcsResult {
   data: InvoiceData;
   verificationStatus: 'VALID' | 'QR_MISMATCH' | 'TAMPERED';
   warning: string | null;
-  saveDisabled: boolean;
+  QRMismatch: boolean;
 }
 
 export interface InvoiceProcessingRequestBody {

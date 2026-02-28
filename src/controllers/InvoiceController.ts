@@ -118,7 +118,7 @@ export class InvoiceController {
     }
   }
 
-  static autoCorrectFromQr(data: InvoiceData): InvoiceData {
+  static autoCorrectFromQR(data: InvoiceData): InvoiceData {
     const QR = data.qrCodeData;
 
     if (!QR?.irn) return data;

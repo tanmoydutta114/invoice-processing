@@ -77,4 +77,11 @@ export default class EnvConfig {
       lastName: process.env.REPORT_RECEIVER_LNAME ?? '',
     };
   }
+
+  static get geminiApiKey() {
+    return process.env.GEMINI_API_KEY ?? '';
+  }
+  static get geminiModel() {
+    return process.env.GEMINI_MODEL ?? '';
+  }
 }
