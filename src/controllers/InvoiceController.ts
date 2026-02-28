@@ -1,13 +1,9 @@
-import { TOTAL_TOLERANCE } from "../types/Constant";
-import {
-  ComparisonResult,
-  InvoiceData,
-  VerificationResult,
-} from "../types/Invoice";
-import { ApiUtility } from "../utility/ApiUtility";
+import { TOTAL_TOLERANCE } from '../types/Constant/index.js';
+import { ComparisonResult, InvoiceData, VerificationResult } from '../types/Invoice.js';
+import { ApiUtility } from '../utility/ApiUtility.js';
 
 export class InvoiceController {
-  static compareDates(invoiceDate: Date, QRData: string): ComparisonResult {
+  static compareDates(invoiceDate: string, QRData: string): ComparisonResult {
     const formDate = ApiUtility.parseISODate(invoiceDate);
     const qrParsed = ApiUtility.parseQRDate(QRData);
     let errors: string[] = [];
@@ -23,19 +19,14 @@ export class InvoiceController {
     };
   }
 
-  static compareInvoiceNumbers(
-    invoiceNo: string,
-    QRInvoiceNo: string,
-  ): ComparisonResult {
+  static compareInvoiceNumbers(invoiceNo: string, QRInvoiceNo: string): ComparisonResult {
     let errors: string[] = [];
 
     let invoiceNoNormalized = ApiUtility.normalizeInvoiceNo(invoiceNo);
     let qrInvoiceNoNormalized = ApiUtility.normalizeInvoiceNo(QRInvoiceNo);
     const match = invoiceNoNormalized === qrInvoiceNoNormalized;
     if (!match) {
-      errors = [
-        `Invoice # mismatch (Invoice: "${invoiceNo}", QR: "${QRInvoiceNo}")`,
-      ];
+      errors = [`Invoice # mismatch (Invoice: "${invoiceNo}", QR: "${QRInvoiceNo}")`];
     }
 
     return {
@@ -44,10 +35,7 @@ export class InvoiceController {
     };
   }
 
-  static compareGSTins(
-    dealerGSTin: string,
-    qrSellerGSTin: string,
-  ): ComparisonResult {
+  static compareGSTins(dealerGSTin: string, qrSellerGSTin: string): ComparisonResult {
     let errors: string[] = [];
     let dealerGSTinNormalized = ApiUtility.normalizeGSTin(dealerGSTin);
     let qrSellerGSTinNormalized = ApiUtility.normalizeGSTin(qrSellerGSTin);
@@ -55,9 +43,7 @@ export class InvoiceController {
     const match = dealerGSTinNormalized === qrSellerGSTinNormalized;
 
     if (!match) {
-      errors = [
-        `Seller GSTin mismatch (Invoice: "${dealerGSTin}", QR: "${qrSellerGSTin}")`,
-      ];
+      errors = [`Seller GSTin mismatch (Invoice: "${dealerGSTin}", QR: "${qrSellerGSTin}")`];
     }
 
     return {
@@ -105,28 +91,25 @@ export class InvoiceController {
     };
   };
 
-  static async verifyInvoiceAuthenticity(
-    data: InvoiceData,
-  ): Promise<VerificationResult> {
+  static async verifyInvoiceAuthenticity(data: InvoiceData): Promise<VerificationResult> {
     let error: string | null = null;
-    let status: "VALID" | "QR_MISMATCH" | "TAMPERED" = "VALID";
+    let status: 'VALID' | 'QR_MISMATCH' | 'TAMPERED' = 'VALID';
 
     try {
       const qrVerification = this.verifyAgainstQR(data);
 
       if (!qrVerification.isValid) {
-        status = "QR_MISMATCH";
-        error = `QR verification failed: ${qrVerification.errors.join("; ")}`;
+        status = 'QR_MISMATCH';
+        error = `QR verification failed: ${qrVerification.errors.join('; ')}`;
       }
 
       if (data.isTampered) {
-        status = "TAMPERED";
-        error =
-          "AI flagged potential visual manipulation. Manual review recommended.";
+        status = 'TAMPERED';
+        error = 'AI flagged potential visual manipulation. Manual review recommended.';
       }
     } catch (err) {
-      status = "QR_MISMATCH";
-      error = "Verification failed due to malformed invoice or QR data.";
+      status = 'QR_MISMATCH';
+      error = 'Verification failed due to malformed invoice or QR data.';
     } finally {
       return {
         status,
@@ -145,16 +128,13 @@ export class InvoiceController {
     if (QR.docNo) updated.invoiceNo = QR.docNo;
 
     if (QR.docDate) {
-      const [day, month, year] = QR.docDate.split("/");
+      const [day, month, year] = QR.docDate.split('/');
       if (day && month && year) {
-        updated.invoiceDate = `${year}-${month.padStart(
-          2,
-          "0",
-        )}-${day.padStart(2, "0")}` as unknown as Date; // fix the date format
+        updated.invoiceDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       }
     }
 
-    if (typeof QR.totInvVal === "number") {
+    if (typeof QR.totInvVal === 'number') {
       updated.grandTotal = QR.totInvVal;
     }
 

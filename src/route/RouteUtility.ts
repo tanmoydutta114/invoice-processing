@@ -1,46 +1,12 @@
-import { NextFunction, Request, Response } from "express";
-import { AuthRequest } from "../types/Auth";
-import { ApiUtility } from "../utility/ApiUtility";
-import EnvConfig from "../utility/AppEnv";
-import { HttpError, sendErrorResponse } from "../utility/HttpError";
-import { HttpStatusCode } from "../utility/HttpStatusCode";
-import { produce } from "immer";
-import { Logger } from "../utility/Logger";
+import { NextFunction, Request, Response } from 'express';
+import { ApiUtility } from '../utility/ApiUtility.js';
+import EnvConfig from '../utility/AppEnv.js';
+import { HttpError, sendErrorResponse } from '../utility/HttpError.js';
+import { HttpStatusCode } from '../utility/HttpStatusCode.js';
+import { produce } from 'immer';
+import { Logger } from '../utility/Logger.js';
 
 export class RouteUtility {
-  static verifyAuth() {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        let authVerified: boolean = false;
-        if (ApiUtility.getIsTestMode()) {
-          authVerified = true;
-        } else {
-          const requestBody: AuthRequest = req.body;
-          const requestKey = requestBody?.key;
-          const requestSecret = requestBody?.secret;
-          if (
-            EnvConfig.validKey !== requestKey ||
-            EnvConfig.validSecret !== requestSecret
-          ) {
-            authVerified = true;
-            throw new HttpError(
-              HttpStatusCode.FORBIDDEN,
-              "Invalid KEY or SECRET",
-              {
-                message: `A valid key or secret is needed to call the backend!`,
-              }
-            );
-          }
-        }
-
-        Logger.info(`Auth verified!.`, req);
-        next();
-      } catch (err: any) {
-        sendErrorResponse(err, req, res);
-      }
-    };
-  }
-
   static sanitizeObjFunc(obj: any) {
     if (obj === undefined || obj === null) {
       return obj;
@@ -60,9 +26,7 @@ export class RouteUtility {
     return produce(obj, (draft: any) => RouteUtility.sanitizeObjFunc(draft));
   }
 
-  static callableWrapper(
-    fn: (req: Request, res: Response) => Promise<Response>
-  ) {
+  static callableWrapper(fn: (req: Request, res: Response) => Promise<Response>) {
     return async (request: Request, response: Response) => {
       const requestId = ApiUtility.generateNanoId();
       try {
@@ -75,21 +39,18 @@ export class RouteUtility {
             return oldSend.call(this, body);
           }
           const sanitizedBody = RouteUtility.sanitizeObjRecursively(body);
-          const isJson = !!sanitizedBody && typeof sanitizedBody === "object";
-          if (isJson && !this.get("Content-Type")) {
-            this.set("Content-Type", "application/json");
+          const isJson = !!sanitizedBody && typeof sanitizedBody === 'object';
+          if (isJson && !this.get('Content-Type')) {
+            this.set('Content-Type', 'application/json');
           }
-          return oldSend.call(
-            this,
-            isJson ? JSON.stringify(sanitizedBody) : sanitizedBody
-          );
+          return oldSend.call(this, isJson ? JSON.stringify(sanitizedBody) : sanitizedBody);
         };
 
         response.json = function (body: any) {
           const sanitizedBody = RouteUtility.sanitizeObjRecursively(body);
           return oldJson.call(this, sanitizedBody);
         };
-        response.on("finish", () => {
+        response.on('finish', () => {
           const logMessage = `Response: Status = ${response.statusCode}, Request ID = ${requestId}, Request URL = ${request.originalUrl}, Request Method = ${request.method}`;
           if (response.statusCode >= 400) {
             Logger.error(logMessage);

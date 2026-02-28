@@ -1,43 +1,54 @@
-import { TOTAL_TOLERANCE } from "../types/Constant";
+import { Request, Response } from 'express';
+import { GoogleStorageController } from '../controllers/GoogleStorageController.js';
+import { InvoiceController } from '../controllers/InvoiceController.js';
 import {
-  ComparisonResult,
-  InvoiceData,
-  VerificationResult,
-} from "../types/Invoice";
-
-/* -------------------------------------------------------------------------- */
-/*                              Field Comparisons                             */
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-/*                             QR Verification Core                           */
-/* -------------------------------------------------------------------------- */
+  InvoiceProcessingRequestBody,
+  ProcessFromGcsOptions,
+  ProcessFromGcsResult,
+} from '../types/types.js';
+import { GeminiService } from './GeminiService.js';
 
 export class InvoiceService {
-  processInvoiceFromGcs = async (
+  static async processInvoiceFromGcs(
     fileUrl: string,
     options: ProcessFromGcsOptions,
-  ): Promise<ProcessFromGcsResult> => {
+  ): Promise<ProcessFromGcsResult> {
     if (!fileUrl) {
-      throw new Error("GCS file URL is required.");
+      throw new Error('GCS file URL is required.');
     }
+
+    const { fetchFileFromUrl } = new GoogleStorageController();
 
     const { base64, mimeType } = await fetchFileFromUrl(fileUrl);
 
-    const extracted = await extractInvoiceData(base64, mimeType, {
+    const extracted = await GeminiService.extractInvoiceData(base64, mimeType, {
       apiKey: options.apiKey,
       model: options.model,
     });
 
-    const processedData = autoCorrectFromQr(extracted);
+    const processedData = InvoiceController.autoCorrectFromQr(extracted);
 
-    const verification = await this.verifyInvoiceAuthenticity(processedData);
+    const verification = await InvoiceController.verifyInvoiceAuthenticity(processedData);
 
     return {
       data: processedData,
       verificationStatus: verification.status,
-      warning: verification.status !== "VALID" ? verification.error : null,
-      saveDisabled: verification.status === "QR_MISMATCH",
+      warning: verification.status !== 'VALID' ? verification.error : null,
+      saveDisabled: verification.status === 'QR_MISMATCH',
     };
-  };
+  }
+  static async processInvoices(req: Request, res: Response) {
+    const invoicePath: InvoiceProcessingRequestBody = req.body
+      ?.invoicePath as InvoiceProcessingRequestBody;
+
+    try {
+      const response = await InvoiceService.processInvoiceFromGcs(
+        invoicePath.fileUrl,
+        invoicePath.options,
+      );
+      return res.status(200).json(response);
+    } catch (err) {
+      return res.status(500).json({ error: 'Order failed', details: err });
+    }
+  }
 }

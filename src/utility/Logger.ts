@@ -1,11 +1,11 @@
-import winston from "winston";
-import "winston-daily-rotate-file";
-import fs from "fs";
-import path from "path";
+import winston from 'winston';
+import 'winston-daily-rotate-file';
+import fs from 'fs';
+import path from 'path';
 
 // Log directory
-const LOG_DIR = path.join(__dirname, "../../logs");
-const MESSAGE_LOG_DIR = path.join(LOG_DIR, "messages"); // Separate directory for messages
+const LOG_DIR = path.join(__dirname, '../../logs');
+const MESSAGE_LOG_DIR = path.join(LOG_DIR, 'messages'); // Separate directory for messages
 
 // Ensure log directories exist
 const ensureLogDirExists = (dir: string) => {
@@ -21,24 +21,21 @@ const safeStringify = (obj: any, space: number = 2) => {
   return JSON.stringify(
     obj,
     (key, value) => {
-      if (typeof value === "object" && value !== null) {
-        if (seen.has(value))
-          return `[Circular reference to ${seen.get(value)}]`;
-        seen.set(value, key || "root");
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) return `[Circular reference to ${seen.get(value)}]`;
+        seen.set(value, key || 'root');
       }
       return value;
     },
-    space
+    space,
   );
 };
 
 // Custom log format (handles circular references)
-const logFormat = winston.format.printf(
-  ({ timestamp, level, message, ...meta }) => {
-    const metaString = Object.keys(meta).length ? safeStringify(meta) : "";
-    return `${timestamp} [${level.toUpperCase()}]: ${message} ${metaString}`;
-  }
-);
+const logFormat = winston.format.printf(({ timestamp, level, message, ...meta }) => {
+  const metaString = Object.keys(meta).length ? safeStringify(meta) : '';
+  return `${timestamp} [${level.toUpperCase()}]: ${message} ${metaString}`;
+});
 
 // Define Winston Logger
 export class Logger {
@@ -48,32 +45,32 @@ export class Logger {
     return winston.createLogger({
       level: logLevel,
       format: winston.format.combine(
-        winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-        logFormat
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        logFormat,
       ),
       transports: [
         // ✅ Console Logging with Proper Formatting
         new winston.transports.Console({
           format: winston.format.combine(
-            winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-            logFormat
+            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+            logFormat,
           ),
         }),
 
         // ✅ File Logging (Daily Rotation)
         new winston.transports.DailyRotateFile({
-          filename: path.join(LOG_DIR, type, "%DATE%.log"),
-          datePattern: "YYYY-MM-DD",
-          maxSize: "10m",
-          maxFiles: "30d",
+          filename: path.join(LOG_DIR, type, '%DATE%.log'),
+          datePattern: 'YYYY-MM-DD',
+          maxSize: '10m',
+          maxFiles: '30d',
           zippedArchive: true,
         }),
       ],
     });
   }
 
-  private static infoLogger = Logger.createLogger("info", "info");
-  private static errorLogger = Logger.createLogger("error", "error");
+  private static infoLogger = Logger.createLogger('info', 'info');
+  private static errorLogger = Logger.createLogger('error', 'error');
 
   // ✅ Log informational messages (console + file)
   static info(message: string, meta: any = {}) {
@@ -89,16 +86,13 @@ export class Logger {
   static logMessage(roomId: string, sender: string, text: string) {
     ensureLogDirExists(MESSAGE_LOG_DIR); // Ensure messages folder exists
 
-    const logFilePath = path.join(
-      MESSAGE_LOG_DIR,
-      `${new Date().toISOString().split("T")[0]}.log`
-    );
+    const logFilePath = path.join(MESSAGE_LOG_DIR, `${new Date().toISOString().split('T')[0]}.log`);
     const logEntry = `${new Date().toISOString()} | Room: ${roomId} | Sender: ${sender} | Message: ${text}\n`;
 
     // Append the log entry to the file
     fs.appendFile(logFilePath, logEntry, (err) => {
       if (err) {
-        Logger.error("Failed to write message log", { error: err.message });
+        Logger.error('Failed to write message log', { error: err.message });
       }
     });
   }

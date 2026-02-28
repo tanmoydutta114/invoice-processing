@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
-    "module": "Node16",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
     "esModuleInterop": true,
-    "target": "es6",
-    "moduleResolution": "node16",
     "sourceMap": true,
     "outDir": "dist",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "strict": true,
+    "resolvePackageJsonImports": true,
+    "skipLibCheck": true
   },
-  "lib": ["es2015"]
+  "lib": ["ES2022"]
 }

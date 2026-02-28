@@ -1,19 +1,7 @@
-import { PERMISSIONS, Role } from "./Constant";
-
-/* ---------------------------------- */
-/*              Primitives            */
-/* ---------------------------------- */
-
 export type ID = string;
 export type ISODateString = string;
 export type Currency = number;
 export type Percentage = number;
-
-export type Permission = (typeof PERMISSIONS)[number];
-
-/* ---------------------------------- */
-/*              Shared Models         */
-/* ---------------------------------- */
 
 export interface BaseEntity {
   id?: ID;
@@ -34,18 +22,6 @@ export interface Customer extends PersonBase {
 
 export interface Dealer extends PersonBase {}
 
-export interface User extends BaseEntity {
-  name: string;
-  email: string;
-  role: Role;
-  company?: string;
-  password?: string;
-}
-
-/* ---------------------------------- */
-/*             Products               */
-/* ---------------------------------- */
-
 export interface ProductItem extends BaseEntity {
   name: string;
   thickness: string;
@@ -56,10 +32,6 @@ export interface ProductItem extends BaseEntity {
   rate: Currency;
   amount: Currency;
 }
-
-/* ---------------------------------- */
-/*               Tax                  */
-/* ---------------------------------- */
 
 export interface TaxInfo {
   percentage: Percentage;
@@ -73,18 +45,10 @@ export interface InvoiceTaxes {
   total: Currency;
 }
 
-/* ---------------------------------- */
-/*            Other Charges           */
-/* ---------------------------------- */
-
 export interface OtherCharge extends BaseEntity {
   description: string;
   amount: Currency;
 }
-
-/* ---------------------------------- */
-/*           QR Code Payload          */
-/* ---------------------------------- */
 
 export interface QRCodePayload {
   sellerGstin: string;
@@ -96,10 +60,6 @@ export interface QRCodePayload {
   itemCnt: number;
   irn: string;
 }
-
-/* ---------------------------------- */
-/*              Invoice               */
-/* ---------------------------------- */
 
 export interface InvoiceMeta {
   savedAt?: ISODateString;
@@ -117,7 +77,7 @@ export interface InvoiceData extends BaseEntity, InvoiceMeta {
   shippingCustomer: Customer;
 
   invoiceNo: string;
-  invoiceDate: Date; // ISODateString
+  invoiceDate: string; // ISODateString
   ewayBillNo: string; //
   irnNo: string;
 
@@ -130,10 +90,6 @@ export interface InvoiceData extends BaseEntity, InvoiceMeta {
 
   remarks: string;
 }
-
-/* ---------------------------------- */
-/*            Invoice Draft           */
-/* ---------------------------------- */
 
 export interface FileMeta {
   fileName: string;
@@ -148,7 +104,7 @@ export interface InvoiceDraft {
   file: FileMeta;
 }
 
-export type VerificationStatus = "VALID" | "QR_MISMATCH" | "TAMPERED";
+export type VerificationStatus = 'VALID' | 'QR_MISMATCH' | 'TAMPERED';
 
 export interface VerificationResult {
   status: VerificationStatus;
