@@ -62,4 +62,24 @@ export class GoogleStorageController {
       throw error;
     }
   }
+  async downloadFileAsBase64(url: string): Promise<{ base64: string; mimeType: string }> {
+    Logger.info(`Downloading file from URL: ${url}`);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to download file. Status: ${response.status} ${response.statusText}`);
+    }
+
+    // Get mime type from headers
+    const contentType = response.headers.get('content-type') || 'application/octet-stream';
+
+    // Convert response to buffer
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    return {
+      base64: buffer.toString('base64'),
+      mimeType: contentType,
+    };
+  }
 }

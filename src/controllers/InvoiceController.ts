@@ -1,6 +1,7 @@
 import { TOTAL_TOLERANCE } from '../types/Constant/index.js';
 import { ComparisonResult, InvoiceData, VerificationResult } from '../types/Invoice.js';
 import { ApiUtility } from '../utility/ApiUtility.js';
+import { Logger } from '../utility/Logger.js';
 
 export class InvoiceController {
   static compareDates(invoiceDate: string, QRData: string): ComparisonResult {
@@ -73,6 +74,7 @@ export class InvoiceController {
     const QR = data.qrCodeData;
 
     if (!QR?.irn) {
+      Logger.error('QR code data is missing or does not contain IRN. Skipping QR verification.');
       return { isValid: true, errors: [] };
     }
 
@@ -108,8 +110,9 @@ export class InvoiceController {
         error = 'AI flagged potential visual manipulation. Manual review recommended.';
       }
     } catch (err) {
+      Logger.error('Error during invoice verification', err);
       status = 'QR_MISMATCH';
-      error = 'Verification failed due to malformed invoice or QR data.';
+      error = 'Verification failed due to malformed invoice or QR data.' + (err instanceof Error ? ` Error: ${err.message}` : '');
     } finally {
       return {
         status,

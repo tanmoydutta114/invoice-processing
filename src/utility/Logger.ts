@@ -1,9 +1,12 @@
 import winston from 'winston';
 import 'winston-daily-rotate-file';
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
 
 // Log directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const LOG_DIR = path.join(__dirname, '../../logs');
 const MESSAGE_LOG_DIR = path.join(LOG_DIR, 'messages'); // Separate directory for messages
 

@@ -1,4 +1,4 @@
-import { InvoiceData } from './Invoice.js';
+import { InvoiceData, VerificationStatus } from './Invoice.js';
 
 export interface ExtractInvoiceOptions {
   apiKey: string;
@@ -14,7 +14,7 @@ export interface GenerateInvoiceResponse {
 export interface ProcessFromGcsOptions {
   apiKey?: string;
   model?: string;
-  fileType: string;
+  fileType?: string;
 }
 
 export interface ProcessFromGcsResult {
@@ -27,4 +27,13 @@ export interface ProcessFromGcsResult {
 export interface InvoiceProcessingRequestBody {
   fileUrl: string;
   options: ProcessFromGcsOptions;
+}
+
+export interface InvoiceProcessingResponseBody {
+  extractedRawInvoice: InvoiceData;
+  processedInvoice: InvoiceData;
+  verificationStatus: VerificationStatus;
+  warning: string | null;
+  QRMismatch: boolean;
+  isSuccess: boolean;
 }

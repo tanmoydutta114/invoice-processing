@@ -26,5 +26,5 @@ setInterval(() => {
 
 // Start the server
 server.listen(PORT, () => {
-  Logger.info(`Integration Server is running on port ${PORT}...`);
+  Logger.info(`Invoice Processing Server is running on port ${PORT}...`);
 });
