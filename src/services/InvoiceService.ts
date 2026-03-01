@@ -3,6 +3,7 @@ import { GoogleStorageController } from '../controllers/GoogleStorageController.
 import { InvoiceController } from '../controllers/InvoiceController.js';
 import {
   InvoiceProcessingRequestBody,
+  InvoiceProcessingResponse,
   InvoiceProcessingResponseBody,
   ProcessFromGcsOptions,
   ProcessFromGcsResult,
@@ -16,7 +17,7 @@ export class InvoiceService {
   static async processInvoiceFromGCPBucket(
     fileUrl: string,
     options: ProcessFromGcsOptions,
-  ): Promise<InvoiceProcessingResponseBody> {
+  ): Promise<InvoiceProcessingResponse> {
     if (!fileUrl) {
       throw new Error('GCS file URL is required.');
     }
@@ -52,7 +53,6 @@ export class InvoiceService {
       verificationStatus: verifiedInvoice.status,
       warning: verifiedInvoice.status !== 'VALID' ? verifiedInvoice.error : null,
       QRMismatch: verifiedInvoice.status === 'QR_MISMATCH',
-      isSuccess: true, // API level response success flag, not to be confused with invoice validity
     };
 
     return response;
@@ -88,7 +88,13 @@ export class InvoiceService {
         invoicePath.fileUrl,
         invoicePath.options,
       );
-      return res.status(200).json(response);
+
+      const invoiceProcessingResponseBody: InvoiceProcessingResponseBody = {
+        isSuccess: true,
+        data: response,
+      };
+
+      return res.status(200).json(invoiceProcessingResponseBody);
     } catch (err) {
       Logger.error('Error processing invoice:', err);
       return res.status(500).json({

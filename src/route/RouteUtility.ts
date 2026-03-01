@@ -7,6 +7,45 @@ import { produce } from 'immer';
 import { Logger } from '../utility/Logger.js';
 
 export class RouteUtility {
+  static verifyAuth() {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        let authVerified: boolean = false;
+        if (ApiUtility.getIsTestMode()) {
+          authVerified = true;
+        } else {
+          const apiKey =
+            req.header('x-api-key') ||
+            req.header('X-API-KEY') ||
+            req.header('x-api-Key') ||
+            req.header('X-API-Key');
+
+          if (EnvConfig.validKey !== apiKey) {
+            authVerified = false;
+            throw new HttpError(
+              HttpStatusCode.FORBIDDEN,
+              'A valid key is needed to call the backend!',
+              {
+                message: `A valid key is needed to call the backend!`,
+              },
+            );
+          }
+        }
+        authVerified = true;
+        Logger.info('Auth verified', {
+          method: req.method,
+          url: req.originalUrl,
+          ip: req.ip,
+          headers: {
+            'x-api-key': req.header('x-api-key'),
+          },
+        });
+        next();
+      } catch (err: any) {
+        sendErrorResponse(err, req, res);
+      }
+    };
+  }
   static sanitizeObjFunc(obj: any) {
     if (obj === undefined || obj === null) {
       return obj;

@@ -7,9 +7,13 @@ export class InvoiceController {
   static compareDates(invoiceDate: string, QRData: string): ComparisonResult {
     const formDate = ApiUtility.parseISODate(invoiceDate);
     const qrParsed = ApiUtility.parseQRDate(QRData);
+
+    Logger.info(`Comparing dates - Invoice: ${formDate}, QR: ${qrParsed}`);
+
     let errors: string[] = [];
 
-    const match = formDate.getTime() === qrParsed.getTime();
+    const match = formDate.getTime() === qrParsed.getTime(); // Original strict comparison
+    // const match = formDate === qrParsed;
 
     if (!match) {
       errors = [`Date mismatch (Invoice: ${invoiceDate}, QR: ${QRData})`];
@@ -25,6 +29,10 @@ export class InvoiceController {
 
     let invoiceNoNormalized = ApiUtility.normalizeInvoiceNo(invoiceNo);
     let qrInvoiceNoNormalized = ApiUtility.normalizeInvoiceNo(QRInvoiceNo);
+
+    Logger.info(
+      `Comparing invoice numbers - Invoice: "${invoiceNoNormalized}", QR: "${qrInvoiceNoNormalized}"`,
+    );
     const match = invoiceNoNormalized === qrInvoiceNoNormalized;
     if (!match) {
       errors = [`Invoice # mismatch (Invoice: "${invoiceNo}", QR: "${QRInvoiceNo}")`];
@@ -41,6 +49,8 @@ export class InvoiceController {
     let dealerGSTinNormalized = ApiUtility.normalizeGSTin(dealerGSTin);
     let qrSellerGSTinNormalized = ApiUtility.normalizeGSTin(qrSellerGSTin);
 
+    Logger;
+
     const match = dealerGSTinNormalized === qrSellerGSTinNormalized;
 
     if (!match) {
@@ -56,6 +66,10 @@ export class InvoiceController {
   static compareTotals(grandTotal: number, QRTotal: number): ComparisonResult {
     const difference = Math.abs(grandTotal - QRTotal);
     const match = difference <= TOTAL_TOLERANCE;
+
+    Logger.info(
+      `Comparing totals - Invoice: ${grandTotal}, QR: ${QRTotal}, Difference: ${difference}, Match: ${match}`,
+    );
 
     let errors: string[] = [];
     if (!match) {
@@ -112,7 +126,9 @@ export class InvoiceController {
     } catch (err) {
       Logger.error('Error during invoice verification', err);
       status = 'QR_MISMATCH';
-      error = 'Verification failed due to malformed invoice or QR data.' + (err instanceof Error ? ` Error: ${err.message}` : '');
+      error =
+        'Verification failed due to malformed invoice or QR data.' +
+        (err instanceof Error ? ` Error: ${err.message}` : '');
     } finally {
       return {
         status,

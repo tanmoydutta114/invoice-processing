@@ -29,11 +29,15 @@ export interface InvoiceProcessingRequestBody {
   options: ProcessFromGcsOptions;
 }
 
-export interface InvoiceProcessingResponseBody {
+export interface InvoiceProcessingResponse {
   extractedRawInvoice: InvoiceData;
   processedInvoice: InvoiceData;
   verificationStatus: VerificationStatus;
   warning: string | null;
   QRMismatch: boolean;
+}
+
+export interface InvoiceProcessingResponseBody {
   isSuccess: boolean;
+  data: InvoiceProcessingResponse;
 }

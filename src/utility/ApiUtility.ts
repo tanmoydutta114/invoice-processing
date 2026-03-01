@@ -4,7 +4,11 @@ import EnvConfig from './AppEnv.js';
 import { Logger } from './Logger.js';
 
 import dayjs from 'dayjs';
-import utc from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+
+dayjs.extend(utc);
+dayjs.extend(customParseFormat);
 
 export class ApiUtility {
   static logInfo(req: Request, message: string, ...otherProps: any[]) {
@@ -73,7 +77,7 @@ export class ApiUtility {
 
   static parseISODate(value: string): Date {
     // Expected format: YYYY-MM-DD
-    const parsed = utc(value, 'YYYY-MM-DD', true);
+    const parsed = dayjs.utc(value, 'YYYY-MM-DD', true);
 
     if (!parsed.isValid()) {
       throw new Error(`Invalid ISO date format: ${value}`);
@@ -84,7 +88,7 @@ export class ApiUtility {
 
   static parseQRDate(value: string): Date {
     // Expected format: DD/MM/YYYY
-    const parsed = utc(value, 'DD/MM/YYYY', true);
+    const parsed = dayjs.utc(value, 'DD/MM/YYYY', true);
 
     if (!parsed.isValid()) {
       throw new Error(`Invalid QR date format: ${value}`);

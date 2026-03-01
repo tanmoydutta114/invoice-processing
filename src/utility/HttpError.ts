@@ -39,30 +39,17 @@ export async function sendErrorResponse(
   Logger.info(`Action: `, {
     url: req.url,
     method: req.method,
-    req,
+    ip: req.ip,
+    headers: {
+      'x-api-key': req.header('x-api-key'),
+    },
   });
-  const errorMessage =
-    (err instanceof HttpError && err?.errorInfo?.message) ||
-    err?.message ||
-    defaultMsg ||
-    'Error occurred';
 
   if (err instanceof HttpError) {
-    Logger.error(err?.errorInfo?.message ?? err?.message ?? 'Error occurred', {
-      req,
-      err,
-      errorObj: err.errorInfo?.objects,
-      url: req.url,
-      method: req.method,
-    });
+    Logger.error(err?.errorInfo?.message ?? err?.message ?? 'Error occurred');
     err.sendResponse(res);
   } else {
-    Logger.error(err?.message ?? 'Error occurred', {
-      req,
-      err,
-      url: req.url,
-      method: req.method,
-    });
+    Logger.error(err?.message ?? 'Error occurred');
     res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send({
       isSuccess: false,
       message: defaultMsg ?? err?.message ?? 'An unknown error occurred',
