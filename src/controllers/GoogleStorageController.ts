@@ -4,6 +4,7 @@ import { Logger } from '../utility/Logger.js';
 import EnvConfig from '../utility/AppEnv.js';
 import serviceAccount from '../../retailerapp-3b0a8825463d.json' with { type: 'json' };
 import { ApiUtility } from '../utility/ApiUtility.js';
+import { fileTypeFromBuffer } from 'file-type';
 export class GoogleStorageController {
   private storage: Storage;
   private bucketName: string;
@@ -77,9 +78,13 @@ export class GoogleStorageController {
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // Determine MIME type from buffer
+    const fileType = await fileTypeFromBuffer(buffer);
+    const mimeType = fileType?.mime || 'image/jpeg';
+
     return {
       base64: buffer.toString('base64'),
-      mimeType: contentType,
+      mimeType: mimeType || 'image/jpeg',
     };
   }
 }

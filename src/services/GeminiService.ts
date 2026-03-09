@@ -1,11 +1,10 @@
 // src/services/invoice-extractor.service.t
-import { Type, GoogleGenAI } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import {
   DISALLOWED_REMARKS,
   DEFAULT_MODEL,
   DEFAULT_MAX_RETRIES,
   DEFAULT_BACKOFF,
-  INVOICE_GENERATION_PROMPT,
 } from '../types/Constant/index.js';
 import { InvoiceData, ProductItem, OtherCharge } from '../types/Invoice.js';
 import { ExtractInvoiceOptions, GenerateInvoiceResponse } from '../types/types.js';
