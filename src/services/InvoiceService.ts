@@ -28,12 +28,13 @@ export class InvoiceService {
 
     Logger.info(`Downloaded file from GCS. Size: ${base64.length} bytes, MIME type: ${mimeType}`);
 
-    const extractedRawInvoice = await GeminiService.extractInvoiceData(base64, mimeType, {
+    const {invoiceDate:extractedRawInvoice, usageMetadata} = await GeminiService.extractInvoiceData(base64, mimeType, {
       apiKey: EnvConfig.geminiApiKey,
       model: EnvConfig.geminiModel,
     });
 
     Logger.info('Extracted Invoice Data:', extractedRawInvoice);
+    Logger.info('Usage details from Gemini API response', usageMetadata);
 
     const processedInvoice = InvoiceController.autoCorrectFromQR(extractedRawInvoice);
 
@@ -50,6 +51,7 @@ export class InvoiceService {
       extractedRawInvoice,
       processedInvoice,
       verifiedInvoice,
+      usageMetadata,
       verificationStatus: verifiedInvoice.status,
       warning: verifiedInvoice.status !== 'VALID' ? verifiedInvoice.error : null,
       QRMismatch: verifiedInvoice.status === 'QR_MISMATCH',

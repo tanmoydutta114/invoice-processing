@@ -1,5 +1,5 @@
 // src/services/invoice-extractor.service.t
-import { GoogleGenAI } from '@google/genai';
+import { GenerateContentResponseUsageMetadata, GoogleGenAI } from '@google/genai';
 import {
   DISALLOWED_REMARKS,
   DEFAULT_MODEL,
@@ -17,7 +17,10 @@ export class GeminiService {
     base64Image: string,
     mimeType: string,
     options: ExtractInvoiceOptions,
-  ): Promise<InvoiceData> {
+  ): Promise<{
+    invoiceDate: InvoiceData;
+    usageMetadata: GenerateContentResponseUsageMetadata | undefined;
+  }> {
     const {
       apiKey,
       model = DEFAULT_MODEL,
@@ -59,14 +62,14 @@ export class GeminiService {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         Logger.info(`Attempt ${attempt + 1} to extract invoice data from image`);
-        const response = (await ai.models.generateContent({
+        const response = await ai.models.generateContent({
           model,
           contents: { parts: [imagePart, textPart] },
           config: {
             responseMimeType: 'application/json',
             responseSchema: INVOICE_SCHEMA,
           },
-        })) as GenerateInvoiceResponse;
+        });
 
         Logger.info('Received response from Gemini API', { response });
 
@@ -75,7 +78,7 @@ export class GeminiService {
           throw new Error('Empty AI response.');
         }
 
-        Logger.info('Raw AI Response:', response.text);
+        Logger.info('Raw AI Response:', { rawInvoice: response.text });
 
         const parsed = JSON.parse(ApiUtility.sanitizeJson(response.text)) as InvoiceData;
 
@@ -99,7 +102,7 @@ export class GeminiService {
           otherCharges,
           remarks: ApiUtility.cleanRemarks(parsed.remarks, DISALLOWED_REMARKS),
         };
-        return invoiceDate;
+        return { invoiceDate, usageMetadata: response.usageMetadata };
       } catch (error) {
         const message =
           error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
